@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RouteXgo - Complete MVP Platform</title>
+    <style>
+        body { margin: 0; font-family: 'Segoe UI', Tahoma, sans-serif; background-color: #f4f7f6; overflow-x: hidden; }
+        
+        /* --- Screen 0: Role Selection Login --- */
+        #roleScreen { display: flex; justify-content: center; align-items: center; height: 100vh; background: linear-gradient(135deg, #1d3557, #457b9d); }
+        .role-card { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); width: 100%; max-width: 380px; text-align: center; }
+        .role-card h1 { color: #e63946; margin-bottom: 5px; font-size: 32px; }
+        .role-card p { color: #666; font-size: 14px; margin-bottom: 30px; }
+        .role-btn { width: 100%; padding: 15px; border-radius: 8px; border: none; font-size: 16px; font-weight: bold; cursor: pointer; margin-bottom: 15px; transition: 0.3s; color: white; }
+        .btn-traveller { background: #1d3557; }
+        .btn-vendor { background: #2a9d8f; }
+
+        /* --- Screen 1: Route Selection --- */
+        #screen1 { display: none; justify-content: center; align-items: center; height: 100vh; }
+        .card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
+        .header { text-align: center; margin-bottom: 25px; }
+        .header h2 { color: #1d3557; margin: 0; font-size: 26px; }
+        .input-group { margin-bottom: 18px; position: relative; }
+        .input-group input { width: 83%; padding: 14px 14px 14px 45px; border-radius: 8px; border: 1px solid #ddd; font-size: 15px; outline: none; }
+        .icon { position: absolute; left: 15px; top: 14px; font-size: 18px; }
+        .tag { background: #e0eaf5; color: #1d3557; padding: 10px 15px; border-radius: 20px; font-size: 13px; cursor: pointer; font-weight: bold; display: inline-block; margin-bottom: 10px; }
+        .btn { width: 100%; padding: 16px; border-radius: 8px; border: none; background: #e63946; color: white; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        
+        /* --- Screen 2: 3D Map View --- */
+        #screen2 { display: none; height: 100vh; background-color: #2b2d42; position: relative; padding-top: 20px; text-align: center; overflow: hidden; }
+        .top-nav { position: absolute; top: 15px; left: 15px; right: 15px; display: flex; justify-content: space-between; z-index: 100; }
+        .nav-btn { background: white; padding: 10px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; border: none; font-size: 13px; }
+        
+        .road-container { position: relative; width: 100%; height: 80vh; display: flex; justify-content: center; perspective: 1200px; }
+        .road { width: 140px; height: 120%; background: #444; position: relative; border-left: 6px solid #ccc; border-right: 6px solid #ccc; transform: rotateX(45deg); box-shadow: 0 20px 50px rgba(0,0,0,0.8); top: -10%; }
+        .road::after { content: ''; position: absolute; left: 50%; top: 0; bottom: 0; width: 6px; background: repeating-linear-gradient(to bottom, transparent, transparent 30px, white 30px, white 60px); transform: translateX(-50%); }
+
+        .car { 
+            position: absolute; width: 26px; height: 48px; background: #e63946; border-radius: 6px; bottom: -10%; left: calc(50% - 13px); transform: rotateX(45deg); z-index: 5; animation: drive 8s linear infinite; box-shadow: 0 15px 15px rgba(0,0,0,0.7); border: 2px solid #b71c1c;
+        }
+        .car::before { content: ''; position: absolute; top: 12px; left: 3px; width: 16px; height: 12px; background: #111; border-radius: 2px; }
+        .car::after { content: ''; position: absolute; top: -4px; left: 3px; width: 6px; height: 6px; background: #fffb00; border-radius: 50%; box-shadow: 10px 0 0 #fffb00, 0 -10px 20px rgba(255, 251, 0, 0.8); }
+        @keyframes drive { 0% { bottom: -10%; opacity: 0; } 10% { opacity: 1; } 80% { opacity: 1; } 100% { bottom: 90%; opacity: 0; } }
+
+        .shop { position: absolute; width: 100px; height: 90px; background: #fdfbf7; border-radius: 4px; box-shadow: -15px 15px 20px rgba(0,0,0,0.5); cursor: pointer; z-index: 10; display: flex; flex-direction: column; align-items: center; }
+        .awning { width: 110%; height: 25px; border-radius: 4px 4px 0 0; position: absolute; top: -10px; }
+        .awning-red { background: repeating-linear-gradient(to right, #e63946, #e63946 15px, #fff 15px, #fff 30px); }
+        .awning-blue { background: repeating-linear-gradient(to right, #1d3557, #1d3557 15px, #fff 15px, #fff 30px); }
+        .door { width: 35px; height: 50px; background: #6f4e37; position: absolute; bottom: 0; border-radius: 4px 4px 0 0; border: 2px solid #4a3219; border-bottom: none; }
+        .signboard { position: absolute; top: 18px; background: #333; color: #fff; font-size: 11px; font-weight: bold; padding: 2px 8px; border-radius: 3px; width: 80%; }
+        .shop-1 { top: 20%; left: calc(50% - 190px); transform: perspective(800px) rotateY(25deg) rotateX(10deg); }
+        .shop-2 { top: 50%; left: calc(50% + 90px); transform: perspective(800px) rotateY(-25deg) rotateX(10deg); }
+
+        /* --- Screen 3: Vendor Dashboard --- */
+        #screen3 { display: none; height: 100vh; background-color: #f8f9fa; padding: 20px; box-sizing: border-box; overflow-y: auto; text-align: left; }
+        .vendor-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #ddd; padding-bottom: 15px; margin-bottom: 20px; }
+        .order-card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); margin-bottom: 15px; border-left: 5px solid #2a9d8f; }
+        .live-distance-badge { background: #fff3cd; color: #856404; font-weight: bold; padding: 6px 12px; border-radius: 6px; display: inline-block; margin-top: 8px; font-size: 14px; border: 1px solid #ffeeba; }
+        .order-otp { background: #e8f5e9; color: #2e7d32; font-weight: bold; display: inline-block; padding: 5px 12px; border-radius: 4px; font-size: 15px; margin-top: 8px; }
+
+        /* --- Modal --- */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 999; justify-content: center; align-items: center; }
+        .modal-box { background: white; padding: 25px; border-radius: 12px; width: 90%; max-width: 320px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        .menu-section { text-align: left; background: #f8f9fa; padding: 12px; border-radius: 8px; margin-bottom: 15px; }
+        .menu-item { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 14px; }
+        .menu-item input { width: 45px; padding: 4px; text-align: center; border: 1px solid #ccc; border-radius: 4px; }
+        .preorder-btn { background: #e63946; color: white; border: none; padding: 12px; border-radius: 6px; font-size: 15px; font-weight: bold; cursor: pointer; width: 100%; }
+        .close-btn { background: #ccc; color: #333; border: none; padding: 10px; border-radius: 6px; font-size: 14px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 8px; }
+        #otpDisplay { display: none; background: #e8f5e9; padding: 15px; border-radius: 6px; margin-bottom: 15px; }
+    </style>
+</head>
+<body>
+
+    <!-- Screen 0: Role Selection Login -->
+    <div id="roleScreen">
+        <div class="role-card">
+            <h1>RouteXgo</h1>
+            <p>Select your portal to continue</p>
+            <button class="role-btn btn-traveller" onclick="selectRole('traveller')">🚗 Traveller Login</button>
+            <button class="role-btn btn-vendor" onclick="selectRole('vendor')">🏪 Dhaba Owner (Vendor) Login</button>
+        </div>
+    </div>
+
+    <!-- Screen 1: Route Selection -->
+    <div id="screen1">
+        <div class="card">
+            <div class="header">
+                <h2>Hello Traveller! 👋</h2>
+                <p>Aaj kahan ka plan hai?</p>
+            </div>
+            <div class="input-group">
+                <span class="icon">📍</span>
+                <input type="text" id="fromLocation" value="Gorakhpur" />
+            </div>
+            <div class="input-group">
+                <span class="icon">🏁</span>
+                <input type="text" id="toLocation" placeholder="To (Destination)" />
+            </div>
+            <div class="tag" onclick="document.getElementById('toLocation').value = 'Prayagraj'">🛣️ Gorakhpur ➔ Prayagraj</div>
+            <button class="btn" onclick="startJourney()">Find Pit Stops & Dhabas 🚀</button>
+            <button class="close-btn" onclick="logoutToRole()" style="margin-top:15px;">⬅️ Back to Role Selection</button>
+        </div>
+    </div>
+
+    <!-- Screen 2: 3D Map View -->
+    <div id="screen2">
+        <div class="top-nav">
+            <button class="nav-btn" onclick="goBackToRoute()">🔙 Change Route</button>
+            <div style="color:white; font-weight:bold; font-size:14px; line-height:30px;">Route: <span id="displayRoute">Gorakhpur ➔ Prayagraj</span></div>
+            <button class="nav-btn" onclick="logoutToRole()">🚪 Logout</button>
+        </div>
+        
+        <div class="road-container">
+            <div class="car"></div>
+            <div class="shop shop-1" onclick="openModal('Shiv Dhaba', '⭐ 4.5 / 5.0', '4.8 km ahead on Highway')">
+                <div class="awning awning-red"></div>
+                <div class="signboard">Shiv Dhaba</div>
+                <div class="door"></div>
+            </div>
+            <div class="road"></div>
+            <div class="shop shop-2" onclick="openModal('Highway Food Plaza', '⭐ 4.8 / 5.0', '12 km ahead on Highway')">
+                <div class="awning awning-blue"></div>
+                <div class="signboard">Food Plaza</div>
+                <div class="door"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Screen 3: Vendor Dashboard -->
+    <div id="screen3">
+        <div class="vendor-header">
+            <h2>🏪 Shiv Dhaba - Live Vendor Dashboard</h2>
+            <button class="nav-btn" onclick="logoutToRole()">🚪 Logout</button>
+        </div>
+        <p style="color:#666; font-size:14px;">Two-Way Tracking: See incoming orders and live distance of the traveller.</p>
+        <div id="orderList">
+            <div style="text-align:center; color:#777; margin-top:40px;">No active orders right now.</div>
+        </div>
+    </div>
+
+    <!-- Custom Modal -->
+    <div id="customModal" class="modal-overlay">
+        <div class="modal-box">
+            <h3 id="modalTitle" style="color:#1d3557; margin-top:0;">Dhaba Name</h3>
+            <div id="modalRating" style="color:#f4a261; margin-bottom:5px;">⭐ 0.0</div>
+            <div id="modalLocationInfo" style="font-size:13px; color:#d35400; font-weight:bold; margin-bottom:10px;">📍 Location Info</div>
+            <div style="background:#e0f2f1; color:#00796b; padding:4px 10px; border-radius:15px; font-size:12px; font-weight:bold; display:inline-block; margin-bottom:10px;">✅ Verified Clean Restroom</div>
+            
+            <div id="menuSection" class="menu-section">
+                <h4 style="margin:0 0 8px 0; color:#1d3557;">Quick Pre-Order Menu</h4>
+                <div class="menu-item">
+                    <span>UP Thali (₹150)</span>
+                    <input type="number" id="qtyThali" min="0" max="10" value="0">
+                </div>
+                <div class="menu-item">
+                    <span>Kulhad Chai (₹20)</span>
+                    <input type="number" id="qtyChai" min="0" max="10" value="0">
+                </div>
+            </div>
+            
+            <div id="otpDisplay">
+                <div id="otpOrderSummary" style="font-weight:bold; font-size:13px; color:#333;"></div>
+                <div style="font-size:12px; color:#555; margin-top:4px;">Food Prep ETA: <strong style="color:#d35400;">12 Mins</strong></div>
+                <div style="font-size:12px; color:#666; margin-top:6px;">Verification Code:</div>
+                <div id="otpCode" style="font-size:22px; font-weight:bold; color:#2e7d32; letter-spacing:2px;">0000</div>
+            </div>
+            
+            <button id="preOrderBtn" class="preorder-btn" onclick="generateCode()">Pre-order & Get ETA/OTP</button>
+            <button class="close-btn" onclick="closeModal()">Close</button>
+        </div>
+    </div>
+
+    <script>
+        let currentDhabaName = "";
+        let latestOrder = null;
+        let liveDistance = "4.8 km";
+
+        function selectRole(role) {
+            document.getElementById('roleScreen').style.display = 'none';
+            if(role === 'traveller') {
+                document.getElementById('screen1').style.display = 'flex';
+            } else {
+                document.getElementById('screen3').style.display = 'block';
+                updateVendorDashboardUI();
+            }
+        }
+
+        function logoutToRole() {
+            document.getElementById('roleScreen').style.display = 'flex';
+            document.getElementById('screen1').style.display = 'none';
+            document.getElementById('screen2').style.display = 'none';
+            document.getElementById('screen3').style.display = 'none';
+        }
+
+        function startJourney() {
+            let to = document.getElementById('toLocation').value;
+            if(!to) { alert("Destination enter karein!"); return; }
+            document.getElementById('displayRoute').innerText = "Gorakhpur ➔ " + to;
+            document.getElementById('screen1').style.display = 'none';
+            document.getElementById('screen2').style.display = 'block';
+
+            setTimeout(() => { liveDistance = "3.2 km"; }, 3000);
+            setTimeout(() => { liveDistance = "1.5 km (Arriving Soon!)"; }, 6000);
+        }
+
+        function goBackToRoute() {
+            document.getElementById('screen2').style.display = 'none';
+            document.getElementById('screen1').style.display = 'flex';
+        }
+
+        function openModal(name, rating, locationInfo) {
+            currentDhabaName = name;
+            document.getElementById('modalTitle').innerText = name;
+            document.getElementById('modalRating').innerText = rating;
+            document.getElementById('modalLocationInfo').innerText = "📍 " + locationInfo;
+            document.getElementById('menuSection').style.display = 'block';
+            document.getElementById('qtyThali').value = 0;
+            document.getElementById('qtyChai').value = 0;
+            document.getElementById('otpDisplay').style.display = 'none';
+            document.getElementById('preOrderBtn').style.display = 'block';
+            document.getElementById('customModal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('customModal').style.display = 'none';
+        }
+
+        function generateCode() {
+            let thali = parseInt(document.getElementById('qtyThali').value);
+            let chai = parseInt(document.getElementById('qtyChai').value);
+            if(thali === 0 && chai === 0) { alert("Kam se kam ek item select karein!"); return; }
+
+            let summary = "";
+            if(thali > 0) summary += `${thali}x Thali `;
+            if(chai > 0) summary += `${chai}x Chai`;
+
+            let code = Math.floor(1000 + Math.random() * 9000);
+            document.getElementById('otpOrderSummary').innerText = "Items: " + summary;
+            document.getElementById('otpCode').innerText = code;
+            
+            document.getElementById('menuSection').style.display = 'none';
+            document.getElementById('preOrderBtn').style.display = 'none';
+            document.getElementById('otpDisplay').style.display = 'block';
+
+            latestOrder = { dhaba: currentDhabaName, items: summary, otp: code, eta: "12 Mins" };
+            updateVendorDashboardUI();
+        }
+
+        function updateVendorDashboardUI() {
+            let listHtml = `<div style="text-align:center; color:#777; margin-top:40px;">No active orders right now.</div>`;
+            if(latestOrder) {
+                listHtml = `
+                    <div class="order-card">
+                        <div style="font-weight:bold; font-size:18px; color:#1d3557;">🚨 Live Order at ${latestOrder.dhaba}</div>
+                        <div style="color:#555; font-size:14px; margin-top:5px;"><strong>Items:</strong> ${latestOrder.items}</div>
+                        <div style="color:#d35400; font-size:14px; margin-top:3px;"><strong>Food Preparation ETA:</strong> ${latestOrder.eta}</div>
+                        <div class="live-distance-badge">🚗 Traveller Live Location: <span style="color:#c0392b;">${liveDistance} away</span></div>
+                        <div style="margin-top:10px;">
+                            <div class="order-otp">Verification OTP: ${latestOrder.otp}</div>
+                        </div>
+                    </div>
+                `;
+            }
+            document.getElementById('orderList').innerHTML = listHtml;
+        }
+    </script>
+</body>
+</html>
